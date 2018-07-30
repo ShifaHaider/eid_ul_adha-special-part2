@@ -21,15 +21,17 @@ class DashboardT extends Component {
             animalID: '',
             order: 0,
             totalOrder: 0,
-            dataOrder: {}
-        }
-
+            dataOrder: {},
+            userData: {},
+            orders: []
+        };
+        this.loadUserData();
     }
 
     componentWillReceiveProps(nextProps) {
         var animalData = nextProps.animalData;
         this.setState({animalData: animalData, animalID: animalData.id});
-
+        {this.state.animalID ? this.loadData() : 'HELLO'}
     }
 
     sendOrder() {
@@ -40,31 +42,53 @@ class DashboardT extends Component {
         var participater = {};
         var userID = localStorage.getItem('userId');
         console.log(userID);
+        // var totalOrder = this.state.orders[0].totalOrder || 1;
+        var totalOrder = this.state.totalOrder ;
         var animalID = this.state.animalID;
         this.state.totalOrder != 7 ? ++this.state.totalOrder : alert('Not available');
-        var totalOrder = this.state.totalOrder;
+        // totalOrder != 7 ? ++totalOrder : alert('Not available');
         console.log(totalOrder);
         this.setState({totalOrder: totalOrder});
         console.log(this.state.totalOrder);
-        participater.userID = userID;
-        participater.animalID = animalID;
-        participater.order = 1;
-        participater.totalOrders = this.state.totalOrder;
-        participater.time = Date.now();
-        // console.log(participater);
-        db.collection('orders').add({participater});
+        console.log(this.state.userData);
+        db.collection('orders').add({
+            userID: userID,
+            userName : this.state.userData.name,
+            userPhone : this.state.userData.phone || null,
+            animalID: animalID,
+            order: 1,
+            totalOrder: this.state.totalOrder,
+            time: Date.now(),
+            status : 'PENDING'
+        });
+    }
+
+    loadUserData() {
+        var db = firebase.firestore();
+        const settings = {timestampsInSnapshots: true};
+        db.settings(settings);
+        var userID = localStorage.getItem('userId');
+        db.collection('Users').doc(userID).get().then((user) => {
+            var userData = user.data();
+            console.log(userData);
+        this.setState({userData: userData});
+    });
     }
 
     loadData() {
+        var arr = [];
         var db = firebase.firestore();
         const settings = {timestampsInSnapshots: true};
         db.settings(settings);
         var animalID = this.state.animalID;
-        console.log(animalID);
-        db.collection('orders').get().then((order)=>{
-           order.forEach((orders)=>{
-               console.log(orders.data());
-           })
+        db.collection('orders').where('animalID', '==', animalID).get().then((order) => {
+            order.forEach((orders) => {
+                var orderS = orders.data();
+                orderS.orderID = orders.id;
+                arr.push(orderS);
+                this.setState({orders: arr })
+            });
+            console.log(this.state.orders );
         })
     }
 
@@ -79,7 +103,7 @@ class DashboardT extends Component {
                         <CardContent>Age : {this.state.animalData.age}</CardContent>
                         <CardContent>Description : {this.state.animalData.description}</CardContent>
                         <CardContent style={{textAlign: 'right'}}><Button variant="contained" color="primary"
-                         onClick={this.sendOrder.bind(this)}>Send Order</Button></CardContent>
+                        onClick={this.sendOrder.bind(this)}>Send Order</Button></CardContent>
                     </Card>
                 </div>
             </div>

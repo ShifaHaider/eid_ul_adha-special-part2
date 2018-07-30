@@ -7,6 +7,8 @@ import Toolbar from '@material-ui/core/Toolbar';
 import {Tabs, Tab} from 'material-ui/Tabs';
 import {GridList, GridTile} from 'material-ui/GridList';
 import {List, ListItem} from 'material-ui/List';
+import Button from '@material-ui/core/Button';
+import UserOrders from "./user-order";
 
 class Dashboard extends Component {
     constructor(props) {
@@ -52,9 +54,11 @@ class Dashboard extends Component {
                 <GridList cols={4} cellHeight='auto'>
                     <GridTile cols={1}>
                         <List style={{borderRight: '3px solid #3f51b5' }}>
+
                             {this.state.animals.map((data , index) => {
                                 return (
                                     <div>
+                                        {/*<b style={{background : '#3f51b5'}}>MY ORDERS</b>*/}
                                         <ListItem key={index} onClick={this.sendData.bind(this, data)}>
                                             {data.animal}
                                         </ListItem>
@@ -64,7 +68,7 @@ class Dashboard extends Component {
                         </List>
                     </GridTile>
                     <GridTile cols={3}>
-                        {this.state.animalData.id ? <DashboardT animalData={this.state.animalData}/> : null}
+                        {this.state.animalData.id ? <DashboardT animalData={this.state.animalData}/> : <UserOrders/>}
                     </GridTile>
                 </GridList>
             </div>
